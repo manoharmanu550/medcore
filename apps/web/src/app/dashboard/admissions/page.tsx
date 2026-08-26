@@ -349,7 +349,7 @@ export default function AdmissionsPage() {
           <Link
             href={`/dashboard/patients/${a.patient.id}?from=admissions`}
             className="font-medium text-primary hover:underline dark:text-blue-400"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
           >
             {a.patient.user.name}
           </Link>
@@ -425,7 +425,7 @@ export default function AdmissionsPage() {
       render: (a) => (
         <Link
           href={`/dashboard/admissions/${a.id}`}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
           className="rounded bg-primary px-2 py-1 text-xs text-white hover:bg-primary-dark"
         >
           {t("admissions.viewChart", "View Chart")}
