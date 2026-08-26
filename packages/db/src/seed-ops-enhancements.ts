@@ -125,10 +125,10 @@ async function main() {
   const invoices = await prisma.invoice.findMany({ take: 30 });
   let gstUpdated = 0;
   for (const inv of invoices) {
-    if (inv.cgstAmount > 0 || inv.sgstAmount > 0) continue;
-    const gst = Math.round(((inv.subtotal * 18) / 100) * 100) / 100;
+    if (inv.cgstAmount.toNumber() > 0 || inv.sgstAmount.toNumber() > 0) continue;
+    const gst = Math.round(((inv.subtotal.toNumber() * 18) / 100) * 100) / 100;
     const half = Math.round((gst / 2) * 100) / 100;
-    const total = inv.subtotal + gst - inv.discountAmount;
+    const total = inv.subtotal.toNumber() + gst - inv.discountAmount.toNumber();
     await prisma.invoice.update({
       where: { id: inv.id },
       data: {
@@ -154,7 +154,7 @@ async function main() {
     const noteNumber = `CN-SEED-${String(i + 1).padStart(3, "0")}`;
     const existing = await prisma.creditNote.findUnique({ where: { noteNumber } });
     if (existing) continue;
-    const amount = Math.min(500, +(inv.totalAmount * 0.1).toFixed(2));
+    const amount = Math.min(500, +(inv.totalAmount.toNumber() * 0.1).toFixed(2));
     await prisma.creditNote.create({
       data: {
         noteNumber,

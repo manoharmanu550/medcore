@@ -28,7 +28,7 @@ async function main() {
   console.log("Creating wards...");
 
   const generalWard = await prisma.ward.upsert({
-    where: { name: "General Ward A" },
+    where: { tenantId_name: { tenantId: (await prisma.tenant.findFirst({ where: { subdomain: "default" }, select: { id: true } }))!.id, name: "General Ward A" } },
     update: {},
     create: {
       name: "General Ward A",
@@ -39,7 +39,7 @@ async function main() {
   });
 
   const privateWard = await prisma.ward.upsert({
-    where: { name: "Private Rooms" },
+    where: { tenantId_name: { tenantId: (await prisma.tenant.findFirst({ where: { subdomain: "default" }, select: { id: true } }))!.id, name: "Private Rooms" } },
     update: {},
     create: {
       name: "Private Rooms",
@@ -50,7 +50,7 @@ async function main() {
   });
 
   const icuWard = await prisma.ward.upsert({
-    where: { name: "ICU" },
+    where: { tenantId_name: { tenantId: (await prisma.tenant.findFirst({ where: { subdomain: "default" }, select: { id: true } }))!.id, name: "ICU" } },
     update: {},
     create: {
       name: "ICU",
