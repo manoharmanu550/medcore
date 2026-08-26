@@ -885,7 +885,7 @@ export default function PatientRegisterPage() {
                         // it to toggle the linked checkbox, which on many
                         // browsers swallows the link navigation. Stop
                         // propagation so the link wins.
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
                         className="font-semibold text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
                       >
                         Terms &amp; Conditions
@@ -895,7 +895,7 @@ export default function PatientRegisterPage() {
                         href="/legal/privacy"
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
                         className="font-semibold text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
                       >
                         Privacy Policy
@@ -1077,3 +1077,4 @@ function Field({
     </div>
   );
 }
+
