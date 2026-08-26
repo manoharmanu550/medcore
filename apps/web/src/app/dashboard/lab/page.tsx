@@ -542,7 +542,7 @@ export default function LabPage() {
                               href={`/dashboard/lab/${o.id}`}
                               data-testid="lab-enter-results-link"
                               onMouseDown={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
-                              onClick={(e) => {
+                              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                                 e.stopPropagation();
                                 e.preventDefault();
                                 router.push(`/dashboard/lab/${o.id}`);
@@ -555,7 +555,7 @@ export default function LabPage() {
                           <Link
                             href={`/dashboard/lab/${o.id}`}
                             onMouseDown={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
-                            onClick={(e) => {
+                            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                               e.stopPropagation();
                               e.preventDefault();
                               router.push(`/dashboard/lab/${o.id}`);
