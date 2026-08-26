@@ -293,7 +293,7 @@ export default function PaymentPlansPage() {
                       <Link
                         href={`/dashboard/billing/${p.invoice.id}`}
                         className="text-primary hover:underline"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
                       >
                         {p.invoice.invoiceNumber}
                       </Link>
