@@ -422,7 +422,7 @@ export default function DoctorsPage() {
         <Link
           href={`/dashboard/doctors/${d.id}`}
           className="font-medium text-primary hover:underline dark:text-blue-400"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
           data-testid={`doctor-card-${d.id}`}
         >
           {d.user?.name || "—"}
