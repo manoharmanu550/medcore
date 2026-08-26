@@ -532,7 +532,7 @@ export default function PatientsPage() {
         <Link
           href={`/dashboard/patients/${p.id}`}
           className="font-mono font-medium text-primary hover:underline dark:text-blue-400"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
         >
           {p.mrNumber}
         </Link>
@@ -614,7 +614,7 @@ export default function PatientsPage() {
       filterable: false,
       hideMobile: false,
       render: (p) => (
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1" onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation() }>
           {p.user?.phone && (
             <>
               <a
