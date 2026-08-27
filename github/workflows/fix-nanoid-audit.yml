@@ -1,0 +1,64 @@
+name: Fix nanoid audit and regenerate lockfile
+
+on:
+  push:
+    branches:
+      - 'fix/nanoid-3.3.18'
+  workflow_dispatch: {}
+
+jobs:
+  audit-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: |
+          npm ci || npm install
+
+      - name: Show nanoid tree
+        run: |
+          echo "=== npm ls nanoid ==="
+          npm ls nanoid --all || true
+          echo "=== npm why nanoid ==="
+          npm why nanoid || true
+
+      - name: Run npm audit (high)
+        id: audit
+        run: |
+          set -e
+          npm audit --audit-level=high || true
+
+      - name: Fail if audit found high or critical
+        if: ${{ steps.audit.outcome == 'failure' }}
+        run: |
+          echo "npm audit reported high/critical vulnerabilities" >&2
+          exit 1
+
+      - name: Run build
+        run: |
+          npm run build
+
+      - name: Commit updated lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git status --porcelain | grep -q package-lock.json; then
+            git add package-lock.json
+            git commit -m "chore: regenerate lockfile after pinning nanoid@3.3.18"
+            git push origin HEAD:fix/nanoid-3.3.18
+          else
+            echo "No changes to package-lock.json"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
