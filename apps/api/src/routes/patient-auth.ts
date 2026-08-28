@@ -54,6 +54,7 @@ import { setAuthCookies } from "../middleware/auth-cookies";
 import { rateLimit } from "../middleware/rate-limit";
 import { signAccessToken, signRefreshToken } from "../services/jwt";
 import { sendSMS } from "../services/channels/sms";
+import { sendEmail } from "../services/messaging/email";
 import { verifyPhoneIdToken } from "../services/firebase-admin";
 
 const router = Router();
@@ -165,7 +166,11 @@ router.post(
       // its own tenantId which we'll pin onto the JWT on verify.
       const user = await prisma.user.findFirst({
         where: { phone, role: Role.PATIENT, isActive: true },
-        select: { id: true, tenantId: true, patient: { select: { id: true } } },
+        select: { 
+          id: true,
+          email: true, 
+          tenantId: true,
+           patient: { select: { id: true } } },
       });
 
       // Anti-enumeration: ALWAYS return 200 success regardless of
@@ -209,8 +214,26 @@ router.post(
       // are intermittently degraded.
       const smsText = `Your MedCore patient portal code: ${code} — valid 5 min. Do not share.`;
       await sendSMS(phone, smsText).catch((err) => {
-        console.error("[patient-auth] SMS send failed", err);
-      });
+  console.error("[patient-auth] SMS send failed", err);
+});
+if (user.email) {
+  const emailResult = await sendEmail({
+    to: user.email,
+    subject: "Your MedCore Patient Portal OTP",
+    html: `
+      <p>Hello,</p>
+      <p>Your MedCore patient portal verification code is:</p>
+      <h2>${code}</h2>
+      <p>This code is valid for 5 minutes.</p>
+      <p>Please do not share this code with anyone.</p>
+    `,
+    text: `Your MedCore patient portal verification code is ${code}. This code is valid for 5 minutes. Do not share it with anyone.`,
+  });
+
+  if (!emailResult.ok) {
+    console.error("[patient-auth] Email send failed:", emailResult.error);
+  }
+}
 
       // Audit. Phone suffix only — the full phone + the OTP itself are
       // NEVER persisted to the audit log (HIPAA / DPDP minimum-data
