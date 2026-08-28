@@ -1,10 +1,10 @@
 // Brevo email transport.
-// Uses the Brevo HTTP API for transactional email delivery.
+// Uses the Brevo v6 HTTP API for transactional email delivery.
 
-import Brevo from "@getbrevo/brevo";
+import { BrevoClient } from "@getbrevo/brevo";
 
 let initialized = false;
-let apiInstance: Brevo | null = null;
+let apiInstance: BrevoClient | null = null;
 
 function ensureInitialized(): { ok: true } | { ok: false; error: string } {
   if (initialized && apiInstance) return { ok: true };
@@ -29,11 +29,10 @@ function ensureInitialized(): { ok: true } | { ok: false; error: string } {
     };
   }
 
-  const api = new Brevo({
+  apiInstance = new BrevoClient({
     apiKey: key,
   });
 
-  apiInstance = api;
   initialized = true;
 
   return { ok: true };
@@ -76,7 +75,7 @@ export async function sendEmail(
   }
 
   try {
-    const sendSmtpEmail = {
+    const response = await apiInstance!.transactionalEmails.sendTransacEmail({
       subject: input.subject,
       htmlContent: input.html,
       textContent: input.text || stripHtml(input.html),
@@ -107,12 +106,7 @@ export async function sendEmail(
             })),
           }
         : {}),
-    };
-
-    const response =
-      await apiInstance!.transactionalEmails.sendTransacEmail(
-        sendSmtpEmail,
-      );
+    });
 
     return {
       ok: true,
@@ -121,15 +115,13 @@ export async function sendEmail(
   } catch (err: unknown) {
     const e = err as {
       message?: string;
-      response?: {
-        body?: {
-          message?: string;
-        };
+      body?: {
+        message?: string;
       };
     };
 
     const detail =
-      e.response?.body?.message ||
+      e.body?.message ||
       e.message ||
       "Unknown Brevo email error";
 
