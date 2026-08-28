@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
+    "start:prod": "npm run start --workspace=@medcore/api",
     "lint": "turbo lint",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push",
