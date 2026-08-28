@@ -4,7 +4,7 @@
 import Brevo from "@getbrevo/brevo";
 
 let initialized = false;
-let apiInstance: Brevo.TransactionalEmailsApi | null = null;
+let apiInstance: Brevo | null = null;
 
 function ensureInitialized(): { ok: true } | { ok: false; error: string } {
   if (initialized && apiInstance) return { ok: true };
@@ -29,12 +29,9 @@ function ensureInitialized(): { ok: true } | { ok: false; error: string } {
     };
   }
 
-  const api = new Brevo.TransactionalEmailsApi();
-
-  api.setApiKey(
-    Brevo.TransactionalEmailsApiApiKeys.apiKey,
-    key,
-  );
+  const api = new Brevo({
+    apiKey: key,
+  });
 
   apiInstance = api;
   initialized = true;
@@ -79,44 +76,43 @@ export async function sendEmail(
   }
 
   try {
-    const sendSmtpEmail = new Brevo.SendSmtpEmail();
-
-    sendSmtpEmail.subject = input.subject;
-
-    sendSmtpEmail.htmlContent = input.html;
-
-    sendSmtpEmail.textContent =
-      input.text || stripHtml(input.html);
-
-    sendSmtpEmail.sender = {
-      name: process.env.BREVO_FROM_NAME || "MedCore",
-      email: process.env.BREVO_FROM_EMAIL!,
+    const sendSmtpEmail = {
+      subject: input.subject,
+      htmlContent: input.html,
+      textContent: input.text || stripHtml(input.html),
+      sender: {
+        name: process.env.BREVO_FROM_NAME || "MedCore",
+        email: process.env.BREVO_FROM_EMAIL!,
+      },
+      to: [
+        {
+          email: input.to,
+        },
+      ],
+      ...(input.replyTo
+        ? {
+            replyTo: {
+              email: input.replyTo,
+            },
+          }
+        : {}),
+      ...(input.attachments?.length
+        ? {
+            attachment: input.attachments.map((a) => ({
+              name: a.filename,
+              content:
+                typeof a.content === "string"
+                  ? Buffer.from(a.content).toString("base64")
+                  : a.content.toString("base64"),
+            })),
+          }
+        : {}),
     };
 
-    sendSmtpEmail.to = [
-      {
-        email: input.to,
-      },
-    ];
-
-    if (input.replyTo) {
-      sendSmtpEmail.replyTo = {
-        email: input.replyTo,
-      };
-    }
-
-    if (input.attachments?.length) {
-      sendSmtpEmail.attachment = input.attachments.map((a) => ({
-        name: a.filename,
-        content:
-          typeof a.content === "string"
-            ? Buffer.from(a.content).toString("base64")
-            : a.content.toString("base64"),
-      }));
-    }
-
     const response =
-      await apiInstance!.sendTransacEmail(sendSmtpEmail);
+      await apiInstance!.transactionalEmails.sendTransacEmail(
+        sendSmtpEmail,
+      );
 
     return {
       ok: true,
