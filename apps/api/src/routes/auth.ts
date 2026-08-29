@@ -1899,7 +1899,9 @@ router.post(
         text: `Your MedCore password reset code is ${code}. This code expires in 10 minutes.`,
       });
 
-      console.log("[Password Reset] Email result:", emailResult);`r`n`r`n      if (!emailResult.ok) {
+      console.log("[Password Reset] Email result:", emailResult);
+
+      if (!emailResult.ok) {
         console.error("[Password Reset] Email failed:", emailResult.error);
       }
       // cleanup(2026-04-24): never print reset codes in production — they'd
@@ -2629,6 +2631,8 @@ router.post(
 );
 
 export { router as authRouter };
+
+
 
 
 
