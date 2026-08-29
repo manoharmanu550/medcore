@@ -59,6 +59,7 @@ import {
 // <img>, so it must be resolved (signed) on read — same as the patient
 // endpoints do for Patient.photoUrl.
 import { resolvePatientPhotoUrl } from "../lib/patient-photo";
+import { sendEmail } from "../services/messaging/email";
 import {
   clearSuperAdminIdleActivity,
   touchSuperAdminIdleActivity,
@@ -1885,6 +1886,22 @@ router.post(
         },
       });
 
+      const emailResult = await sendEmail({
+        to: email,
+        subject: "MedCore Password Reset Code",
+        html: `
+          <h2>MedCore Password Reset</h2>
+          <p>Your password reset code is:</p>
+          <h1>${code}</h1>
+          <p>This code expires in 10 minutes.</p>
+          <p>If you did not request a password reset, you can ignore this email.</p>
+        `,
+        text: `Your MedCore password reset code is ${code}. This code expires in 10 minutes.`,
+      });
+
+      if (!emailResult.ok) {
+        console.error("[Password Reset] Email failed:", emailResult.error);
+      }
       // cleanup(2026-04-24): never print reset codes in production — they'd
       // land in log aggregators and are effectively a password. Keep the dev
       // helper so local runs without an email channel still work.
@@ -2612,3 +2629,6 @@ router.post(
 );
 
 export { router as authRouter };
+
+
+
