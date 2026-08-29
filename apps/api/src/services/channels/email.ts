@@ -1,9 +1,8 @@
-// Email channel adapter (SendGrid / SMTP gateway pattern via HTTP).
+// Email channel adapter — Brevo HTTP API
 //
 // Env vars:
-//   EMAIL_API_URL    — provider HTTP endpoint (e.g. SendGrid v3 /mail/send)
-//   EMAIL_API_KEY    — bearer / API key
-//   EMAIL_FROM       — verified sender address
+//   BREVO_API_KEY     — Brevo API key
+//   BREVO_FROM_EMAIL  — verified sender email
 
 import type { ChannelResult } from "./whatsapp";
 
@@ -12,33 +11,56 @@ export async function sendEmail(
   subject: string,
   body: string
 ): Promise<ChannelResult> {
-  const apiKey = process.env.EMAIL_API_KEY;
-  const apiUrl = process.env.EMAIL_API_URL;
-  const from = process.env.EMAIL_FROM || "noreply@medcore.local";
+  const apiKey = process.env.BREVO_API_KEY;
+  const from = process.env.BREVO_FROM_EMAIL;
 
-  if (!apiKey || !apiUrl) {
-    console.log(`[Email stub] to=${to} subject=${subject} body=${body}`);
-    return { ok: true, messageId: "stub-" + Date.now() };
+  if (!apiKey || !from) {
+    console.error("[Email] BREVO_API_KEY or BREVO_FROM_EMAIL is missing");
+    return { ok: false, error: "Brevo email configuration is missing" };
   }
 
   try {
-    const res = await fetch(apiUrl, {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Accept: "application/json",
+        "api-key": apiKey,
       },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email: to }] }],
-        from: { email: from },
+        sender: {
+          email: from,
+        },
+        to: [
+          {
+            email: to,
+          },
+        ],
         subject,
-        content: [{ type: "text/plain", value: body }],
+        textContent: body,
       }),
     });
-    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
-    const messageId = res.headers.get("x-message-id") || undefined;
-    return { ok: true, messageId };
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("[Email] Brevo error:", res.status, errorText);
+      return {
+        ok: false,
+        error: `Brevo HTTP ${res.status}`,
+      };
+    }
+
+    const data = await res.json().catch(() => ({}));
+
+    return {
+      ok: true,
+      messageId: data.messageId,
+    };
   } catch (e) {
-    return { ok: false, error: String(e) };
+    console.error("[Email] Brevo request failed:", e);
+    return {
+      ok: false,
+      error: String(e),
+    };
   }
 }
