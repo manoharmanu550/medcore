@@ -48,7 +48,7 @@
     "supertest": "^7.0.0",
     "tsx": "^4.22.4",
     "turbo": "^2.9.18",
-    "typescript": "^5.8.0",
+    "typescript": "^7.0.2",
     "vitest": "^2.1.9",
     "axios": "1.18.1",
     "brace-expansion": "1.1.16",
